@@ -64,7 +64,7 @@ function MainContainer() {
     <>
       <Flex justify='space-between' align='center'>
         <Space>
-          <Typography.Title>Alpha</Typography.Title>
+          <Typography.Title>Личный кабинет UJIN</Typography.Title>
           {ConfigStore.isWorking && <ThunderboltTwoTone />}
         </Space>
 

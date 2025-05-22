@@ -106,7 +106,7 @@ index.html
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>TradeBot</title>
+    <title>UJIN</title>
   </head>
   <body>
     <div id="root"></div>
@@ -130,31 +130,34 @@ package.json
     "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
   },
   "dependencies": {
-    "@ant-design/icons": "^5.3.6",
-    "antd": "^5.16.0",
-    "axios": "^1.6.8",
-    "mobx": "^6.12.3",
-    "mobx-react": "^9.1.1",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router": "^6.22.3",
-    "react-router-dom": "^6.22.3",
-    "victory": "^37.0.2"
+    "@ant-design/icons": "^6.0.0",
+    "@react-three/drei": "^10.0.8",
+    "@react-three/fiber": "^9.1.2",
+    "@types/three": "^0.176.0",
+    "antd": "^5.25.2",
+    "axios": "^1.9.0",
+    "mobx": "^6.13.7",
+    "mobx-react": "^9.2.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router": "^7.6.0",
+    "react-router-dom": "^7.6.0",
+    "three": "^0.176.0"
   },
   "devDependencies": {
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "eslint": "^8.55.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.1.3",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "prettier": "^3.2.5",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@typescript-eslint/eslint-plugin": "^8.32.1",
+    "@typescript-eslint/parser": "^8.32.1",
+    "@vitejs/plugin-react": "^4.4.1",
+    "eslint": "^9.27.0",
+    "eslint-config-prettier": "^10.1.5",
+    "eslint-plugin-prettier": "^5.4.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5"
   }
 }
 
@@ -182,6 +185,71 @@ public/
 
 src/
   api/
+    getDeviceInfo.ts
+import axios, {AxiosResponse} from "axios";
+
+export interface GetDeviceSignalsParamsI {
+  apartmentId: string | number;
+  eg: string;
+}
+
+export interface GetDeviceSignalsResponseI {
+  command: string;
+  error: number;
+  message: string;
+  data: GetDeviceSignalsDataI;
+  connection: ConnectionInfoI;
+  token: string;
+  fromdomain: string;
+  worktime: string;
+}
+
+interface GetDeviceSignalsDataI {
+  apartment: ApartmentInfoI;
+  signals: SignalsDataI;
+}
+
+interface ApartmentInfoI {
+  apartment_id: string;
+  apartment_title: string;
+}
+
+interface SignalsDataI {
+  [serialNumber: string]: SignalItemI[];
+}
+
+export interface SignalItemI {
+  intensity: number;
+  name: string;
+  signal_label: string;
+}
+
+interface ConnectionInfoI {
+  server_real_ip: string;
+  user_ip: string;
+}
+
+const $apartmentApi = axios.create({baseURL: 'https://api-uae-test.ujin.tech/api/huk/'})
+
+export default class ApartmentService {
+  private static readonly hukBaseUrl = 'get-device-signals/';
+
+  static async getApartmentDevices(
+    params: GetDeviceSignalsParamsI
+  ): Promise<AxiosResponse<GetDeviceSignalsResponseI>> {
+    return $apartmentApi.get<GetDeviceSignalsResponseI>(this.hukBaseUrl, {
+      params: {
+        apartment_id: params.apartmentId,
+        eg: params.eg,
+        egt: 6,
+        token: 'con-10892-057f7948807f893374d5b4c8bdf397d3',
+      }
+    });
+  }
+}
+
+
+
     index.ts
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
@@ -266,6 +334,220 @@ export default class LoginService {
 
 
   components/
+    HUApartmentScene/
+      HUApartmentScene.tsx
+import {Box, ContactShadows, OrbitControls, Plane, SoftShadows} from "@react-three/drei";
+import {Canvas, useThree} from "@react-three/fiber";
+import {Cylinder} from "@react-three/drei/core/shapes";
+import {SignalItemI} from "../../api/getDeviceInfo.ts";
+import {Vector3} from "three";
+
+interface DevicesCoordinates {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  color: string;
+}
+
+const DEVICES_COORDINATES: DevicesCoordinates[] = [
+  {
+    position: [-0.2, 0.7, -1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-0.2, 0.7, 0.55],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [0.4, 0.7, 0.55],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-1.4, 0.7, -1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-1.4, 0.7, 1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-0.75, 0.7, 0.4],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+  {
+    position: [-2, 0.7, 0.4],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+  {
+    position: [2, 0.7, -1],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+  {
+    position: [1.5, 0.7, 1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-0.65, 0.7, 1.6],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+];
+
+function ApartmentScene() {
+  const { camera } = useThree()
+
+  function lookAt(position: [number, number, number]) {
+    camera.lookAt(...position)
+  }
+
+  return (
+    <>
+      {/*Датчик*/}
+      {DEVICES_COORDINATES.map(({position, rotation, color}) => (
+        <Cylinder
+          onClick={() => lookAt(position)}
+          onPointerOver={() => (document.body.style.cursor = 'pointer')}
+          onPointerOut={() => (document.body.style.cursor = 'auto')}
+          receiveShadow
+          castShadow
+          position={position}
+          rotation={rotation}
+          args={[0.1, 0.1, 0.1]}
+        >
+          <meshStandardMaterial color={color}/>
+        </Cylinder>
+      ))}
+
+      {/* Плоскость пола */}
+      <Plane args={[4, 4]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+        <meshStandardMaterial color="lightgray"/>
+      </Plane>
+
+      {/* Стены как коробки */}
+      <Box receiveShadow castShadow position={[0, 0.5, -1.95]} args={[4, 1, 0.1]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[2.05, 0.5, 0]} args={[0.1, 1, 4]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[0, 0.5, 1.95]} args={[4, 1, 0.1]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[0.1, 0.5, 0.6]} args={[1.7, 1, 0.1]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[1.8, 0.5, 0.6]} args={[0.5, 1, 0.1]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[-2.05, 0.5, 0]} args={[0.1, 1, 4]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[-0.7, 0.5, 1]} args={[0.1, 1, 2]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[-0.7, 0.5, -1.2]} args={[0.1, 1, 1.4]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[-1.8, 0.5, -1]} args={[0.4, 1, 0.1]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+      <Box receiveShadow castShadow position={[-0.9, 0.5, -1]} args={[0.4, 1, 0.1]}>
+        <meshStandardMaterial color="white"/>
+      </Box>
+    </>
+  )
+}
+
+interface HUApartmentScenePropsI {
+  devices?: SignalItemI[];
+}
+
+export default function HUApartmentScene({devices}: HUApartmentScenePropsI) {
+  return (
+    <Canvas
+      style={{width: 600, height: 600}}
+      camera={{
+        fov: 50,
+        far: 100,
+        near: 0.1,
+        position: [0, 7, 0]
+      }}
+      gl={{
+        antialias: true,
+        powerPreference: "high-performance",
+      }}
+      shadows
+    >
+      <ApartmentScene/>
+
+      <OrbitControls
+        enableRotate
+        minPolarAngle={Math.PI / 5}
+        maxPolarAngle={Math.PI / 2}
+        minDistance={8}
+        maxDistance={8}
+        enablePan={false}
+        target={[0, 0.5, 0]}
+      />
+
+      <hemisphereLight
+        color="white"
+        groundColor="#171717"
+        intensity={0.8}
+      />
+
+      {/* Основной направленный свет */}
+      <directionalLight
+        position={[5, 10, 5]}
+        intensity={1.2}
+        castShadow={true}
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-camera-near={0.1}
+        shadow-camera-far={50}
+        shadow-camera-left={-20}
+        shadow-camera-right={20}
+        shadow-camera-top={20}
+        shadow-camera-bottom={-20}
+        shadow-bias={-0.0001} // Уменьшает артефакты
+        shadow-normalBias={0.05} // Улучшает качество теней
+      />
+
+      {/* Дополнительный мягкий свет сбоку */}
+      <directionalLight
+        position={[-10, 5, 0]}
+        intensity={0.4}
+        castShadow={false}
+      />
+
+      <ContactShadows
+        position={[0, -0.01, 0]}
+        opacity={0.6}
+        scale={10}
+        blur={2}
+        far={10}
+      />
+
+      <SoftShadows size={25} samples={16}/>
+      <ambientLight intensity={1}/>
+      <directionalLight
+        position={[5, 5, 5]}
+        intensity={1.5}
+        castShadow={true}
+      />
+    </Canvas>
+  )
+}
+
+
     HULoadingBar/
       HULoadingBar.module.css
 .wrapper {
@@ -332,7 +614,7 @@ body {
 .main {
   width: 100%;
   height: 100dvh;
-  max-width: 600px;
+  max-width: 1200px;
   margin: auto;
   display: flex;
   flex-direction: column;
@@ -362,55 +644,50 @@ textarea {
   main.tsx
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import AccountContainer from './pages/account/AccountContainer/AccountContainer.tsx';
 import MainContainer from './pages/account/MainContainer/MainContainer.tsx';
-import { Navigate } from 'react-router';
+import {Navigate} from 'react-router';
 import AccountPage from './pages/account/AccountPage/AccountPage.tsx';
 import MainPage from './pages/account/MainPage/MainPage.tsx';
-import ConfigurationPage from './pages/account/ConfigurationPage/ConfigurationPage.tsx';
 import ApartmentDetailsPage from './pages/account/ApartmentDetailsPage/ApartmentDetailsPage.tsx';
 import LoginPage from './pages/login/LoginPage.tsx';
-import { ConfigProvider, theme } from 'antd';
-import { observer } from 'mobx-react';
+import {ConfigProvider, theme} from 'antd';
+import {observer} from 'mobx-react';
 import ConfigStore from './store/configStore.ts';
-import { useEffect } from 'react';
+import {useEffect} from 'react';
 
 export const router = createBrowserRouter([
   {
-    element: <AccountContainer />,
+    element: <AccountContainer/>,
     path: 'account',
     children: [
       {
-        element: <MainContainer />,
+        element: <MainContainer/>,
         path: '',
         children: [
           {
             path: '',
-            element: <MainPage />,
+            element: <MainPage/>,
           },
           {
-            path: 'configuration',
-            element: <ConfigurationPage />,
-          },
-          {
-            path: 'help',
-            element: <ApartmentDetailsPage />,
+            path: 'apartment-details',
+            element: <ApartmentDetailsPage/>,
           },
         ],
       },
       {
-        element: <AccountPage />,
+        element: <AccountPage/>,
         path: 'settings',
       },
     ],
   },
   {
-    element: <LoginPage />,
+    element: <LoginPage/>,
     path: 'login',
   },
   {
-    element: <Navigate to={'/login'} />,
+    element: <Navigate to={'/login'}/>,
     path: '*',
   },
 ]);
@@ -423,15 +700,15 @@ const App = observer(() => {
     return (
       <main className='main'>
         <ConfigProvider
-          theme={{ algorithm: ConfigStore.theme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
-          <RouterProvider router={router} />
+          theme={{algorithm: ConfigStore.theme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm}}>
+          <RouterProvider router={router}/>
         </ConfigProvider>
       </main>
     );
   },
 );
 
-ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')!).render(<App/>);
 
 
   pages/
@@ -571,117 +848,59 @@ export default function AccountPage() {
 }
 
 
-      ConfigurationPage/
-        ConfigurationPage.tsx
-import { Button, Flex, Input, InputNumber, Select, Space, Typography } from 'antd';
-import { useNavigate } from 'react-router';
-import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { Colors } from '../../../consts.ts';
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-
-export default function ConfigurationPage() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState<boolean>(false);
-
-  function handleSave() {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 700);
-  }
-
-  return (
-    <Flex vertical justify="space-between" align="stretch" flex="1">
-      <Space direction="vertical" size="large">
-        <Space style={{ width: '100%' }} direction="vertical">
-          <Typography.Text>Авторизационный токен "42[...</Typography.Text>
-          <Input.TextArea autoSize variant="filled" placeholder='Авторизационный токен "42[...' />
-        </Space>
-
-        <Space direction="vertical">
-          <Space>
-            <InputNumber<number> variant="filled" controls min={0} defaultValue={3} />
-            <Typography.Text>
-              Минимальный импульс&nbsp;
-              <Link to="/account/help">
-                <QuestionCircleOutlined />
-              </Link>
-            </Typography.Text>
-          </Space>
-
-          <Space>
-            <InputNumber<number> variant="filled" controls min={0} defaultValue={4} />
-            <Typography.Text>
-              Минимальный разрыв&nbsp;
-              <Link to="/account/help">
-                <QuestionCircleOutlined />
-              </Link>
-            </Typography.Text>
-          </Space>
-
-          <Space>
-            <InputNumber<number> variant="filled" controls min={0} defaultValue={5} />
-            <Typography.Text>
-              Интервал, сек.&nbsp;
-              <Link to="/account/help">
-                <QuestionCircleOutlined />
-              </Link>
-            </Typography.Text>
-          </Space>
-        </Space>
-
-        <Space>
-          <Space.Compact>
-            <Select
-              defaultValue="EURRUB"
-              options={[
-                { value: 'EURRUB', label: 'EURRUB' },
-                { value: 'USDRUB', label: 'USDRUB' },
-                { value: 'BTSUSDT', label: 'BTSUSDT' },
-              ]}
-            />
-            <Input variant="filled" placeholder="Текущая пара" />
-          </Space.Compact>
-          <Typography.Text>
-            Пара&nbsp;
-            <Link to="/account/help">
-              <QuestionCircleOutlined />
-            </Link>
-          </Typography.Text>
-        </Space>
-
-        <Typography.Text type="secondary">
-          <ExclamationCircleOutlined style={{ color: Colors.Warning }} />
-          &nbsp; Пояснения к параметрам конфигурации находятся на вкладке&nbsp;
-          <Link to={'/account/help'}>помощь</Link>
-        </Typography.Text>
-      </Space>
-
-      <Space direction="vertical">
-        <Button block type="primary" loading={loading} onClick={handleSave}>
-          Сохранить
-        </Button>
-        <Button block type="text" onClick={() => navigate('/account')}>
-          Отмена
-        </Button>
-      </Space>
-    </Flex>
-  );
-}
-
-
       ApartmentDetailsPage/
         ApartmentDetailsPage.tsx
-import { Flex, Typography } from 'antd';
+import {Card, Flex, Progress, Typography} from 'antd';
+import HUApartmentScene from "../../../components/HUApartmentScene/HUApartmentScene.tsx";
+import {useSearchParams} from "react-router-dom";
+import {useEffect} from "react";
+import ApartmentStore from "../../../store/appartmentStore.ts";
+import {observer} from "mobx-react";
 
-export default function ApartmentDetailsPage() {
+const ApartmentDetailsPage = observer(() => {
+  const [searchParams] = useSearchParams();
+  const apartmentId = searchParams.get('apartmentId');
+  const eg = searchParams.get('eg');
+
+  useEffect(() => {
+    if(apartmentId && eg) {
+      void ApartmentStore.fetchApartmentDevices({apartmentId, eg});
+    }
+  }, []);
+
   return (
-    <Flex flex='1' vertical justify='center' align='center'>
-      <Typography.Text type='secondary'>Страница в разработке</Typography.Text>
+    <Flex flex='1' justify='center' align='center'>
+      <Flex gap={12} style={{width: '100%', height: '100%'}} vertical align='flex-start'>
+        <Typography.Title level={2}>Список устройств</Typography.Title>
+        <Flex vertical gap={12} style={{ width: '80%', overflowY: 'auto'}}>
+          {ApartmentStore.allDevicesInfo.map(item => (
+            <Card style={{width: '100%'}}>
+              <Flex justify='space-between'>
+                <Flex vertical>
+                  <Typography.Text strong>{item.signal_label}</Typography.Text>
+                  <Typography.Text type='secondary'>{item.name}</Typography.Text>
+                </Flex>
+                <Progress
+                  strokeWidth={12}
+                  size={60}
+                  strokeColor={ApartmentStore.getIntencityColor(item.intensity)}
+                  type="circle"
+                  percent={(Number(item.intensity) / 10) * 100}
+                  format={(percent) => `${Number(percent).toFixed(2)}`}
+                />
+              </Flex>
+            </Card>
+          ))}
+        </Flex>
+      </Flex>
+      <Flex style={{height: '100%'}}>
+        <HUApartmentScene/>
+      </Flex>
     </Flex>
   );
-}
+});
+
+export default ApartmentDetailsPage;
 
 
       MainContainer/
@@ -694,28 +913,29 @@ export default function ApartmentDetailsPage() {
 
 
         MainContainer.tsx
-import { Button, Flex, Segmented, Space, Switch, Typography } from 'antd';
+import {Button, Flex, Segmented, Space, Switch, Typography} from 'antd';
 import {
   HomeOutlined,
+  LineChartOutlined,
+  LoadingOutlined,
   MoonOutlined,
-  QuestionCircleOutlined,
-  SlidersOutlined,
   SunOutlined,
   ThunderboltTwoTone,
   UserOutlined,
 } from '@ant-design/icons';
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import { SegmentedLabeledOption } from 'rc-segmented';
+import {Outlet, useLocation, useNavigate} from 'react-router';
+import {SegmentedLabeledOption} from 'rc-segmented';
 import cls from './MainContainer.module.css';
-import { useEffect, useState } from 'react';
-import { observer } from 'mobx-react';
+import {useEffect, useState} from 'react';
+import {observer} from 'mobx-react';
 import ConfigStore from '../../../store/configStore.ts';
+import ApartmentStore from "../../../store/appartmentStore.ts";
 
 const segmentedConfig: SegmentedLabeledOption<string>[] = [
   {
     label: (
       <Space>
-        <HomeOutlined />
+        <HomeOutlined/>
         Главная
       </Space>
     ),
@@ -725,21 +945,11 @@ const segmentedConfig: SegmentedLabeledOption<string>[] = [
   {
     label: (
       <Space>
-        <SlidersOutlined />
-        Настройки
+        <LineChartOutlined/>
+        Детализация
       </Space>
     ),
-    value: 'configuration',
-    disabled: false,
-  },
-  {
-    label: (
-      <Space>
-        <QuestionCircleOutlined />
-        Помощь
-      </Space>
-    ),
-    value: 'help',
+    value: 'apartment-details',
     disabled: false,
   },
 ];
@@ -748,6 +958,7 @@ function MainContainer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentSelection, setCurrentSelection] = useState<string>(segmentedConfig[0].value);
+  const [isLoadingGlobal, setIsLoadingGlobal] = useState<boolean>(false);
 
   useEffect(() => {
     setCurrentSelection(
@@ -756,12 +967,18 @@ function MainContainer() {
     );
   }, [location]);
 
+  useEffect(() => {
+    const isLoading = ApartmentStore.isLoading;
+    setIsLoadingGlobal(isLoading);
+  }, [ApartmentStore.isLoading]);
+
   return (
     <>
       <Flex justify='space-between' align='center'>
         <Space>
-          <Typography.Title>Alpha</Typography.Title>
-          {ConfigStore.isWorking && <ThunderboltTwoTone />}
+          <Typography.Title>Личный кабинет UJIN</Typography.Title>
+          {ConfigStore.isWorking && <ThunderboltTwoTone/>}
+          {isLoadingGlobal && <LoadingOutlined style={{fontSize: 32}} size={32}/>}
         </Space>
 
         <Space size='large'>
@@ -769,14 +986,14 @@ function MainContainer() {
             onChange={checked => {
               ConfigStore.changeTheme(checked ? 'dark' : 'light');
             }}
-            checkedChildren={<MoonOutlined />}
-            unCheckedChildren={<SunOutlined />}
+            checkedChildren={<MoonOutlined/>}
+            unCheckedChildren={<SunOutlined/>}
             checked={ConfigStore.theme === 'dark'}
           />
           <Button
             onClick={() => navigate('settings')}
             type='text'
-            icon={<UserOutlined style={{ fontSize: 24 }} />}
+            icon={<UserOutlined style={{fontSize: 24}}/>}
           />
         </Space>
       </Flex>
@@ -789,7 +1006,7 @@ function MainContainer() {
         value={currentSelection}
       />
       <div className={cls.mainContainer}>
-        <Outlet />
+        <Outlet/>
       </div>
     </>
   );
@@ -800,12 +1017,13 @@ export default observer(MainContainer);
       MainPage/
         MainPage.tsx
 import { Button, Flex, Space, Typography } from 'antd';
-import { useState } from 'react';
+import {useEffect, useState} from 'react';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { Colors } from '../../../consts.ts';
 import { Link } from 'react-router-dom';
 import { observer } from 'mobx-react';
 import ConfigStore from '../../../store/configStore.ts';
+import DeviceService from "../../../api/getDeviceInfo.ts";
 
 function MainPage() {
   const [active, setActive] = useState<boolean>(ConfigStore.isWorking);
@@ -821,6 +1039,10 @@ function MainPage() {
       });
     }, 700);
   }
+
+  useEffect(() => {
+    void DeviceService.getApartmentDevices({apartmentId: '2117', eg: '2fc4f90a-346d-4d1c-aebc-6ff45a9c3136'})
+  }, []);
 
   return (
     <Flex vertical justify='center' align='center' flex='1'>
@@ -890,6 +1112,59 @@ export default function LoginPage() {
 
 
   store/
+    appartmentStore.ts
+import {makeAutoObservable} from "mobx";
+import ApartmentService, {
+  GetDeviceSignalsParamsI,
+  GetDeviceSignalsResponseI,
+  SignalItemI
+} from "../api/getDeviceInfo.ts";
+
+class ApartmentStore {
+  private allData: GetDeviceSignalsResponseI | null = null;
+  isLoading = false;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  getIntencityColor(intencity: number): string {
+    if (intencity < 0) return 'green';
+    if (intencity < 5) return 'yellow';
+    if (intencity < 10) return 'orange';
+    return 'red';
+  }
+
+  get allSerialNumbers(): number[] {
+    return Object.keys(this.allData?.data.signals ?? {}).map(Number);
+  }
+
+  get allDevicesInfo(): SignalItemI[] {
+    const result: SignalItemI[] = [];
+
+    this.allSerialNumbers.forEach(serialNumber => {
+      const devices = this.allData?.data.signals[serialNumber]
+      if(devices) result.push(...devices);
+    })
+    return result;
+  }
+
+  async fetchApartmentDevices(params: GetDeviceSignalsParamsI): Promise<void>{
+    this.isLoading = true;
+    try {
+      const response = await ApartmentService.getApartmentDevices(params);
+      this.allData = response.data;
+      this.isLoading = false;
+    } catch (e) {
+      this.isLoading = false;
+      throw new Error('Error while fetching apartment devices');
+    }
+  }
+}
+
+export default new ApartmentStore();
+
+
     configStore.ts
 import { makeAutoObservable } from 'mobx';
 import { Colors, THEME } from '../consts.ts';

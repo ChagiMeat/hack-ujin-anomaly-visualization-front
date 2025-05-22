@@ -1,13 +1,104 @@
 import {Box, ContactShadows, OrbitControls, Plane, SoftShadows} from "@react-three/drei";
-import {Canvas} from "@react-three/fiber";
+import {Canvas, useThree} from "@react-three/fiber";
 import {Cylinder} from "@react-three/drei/core/shapes";
 import {SignalItemI} from "../../api/getDeviceInfo.ts";
+import {Vector3} from "three";
+import {useEffect} from "react";
+import AppartmentStore from "../../store/appartmentStore.ts";
 
-const DEVICES_COORDINATES: [number, number, number][] = [];
+interface DevicesCoordinates {
+  position: [number, number, number];
+  rotation: [number, number, number];
+  color: string;
+}
 
-function ApartmentScene({devices}: HUApartmentScenePropsI) {
+const DEVICES_COORDINATES: DevicesCoordinates[] = [
+  {
+    position: [-0.2, 0.7, -1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-0.2, 0.7, 0.55],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [0.4, 0.7, 0.55],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-1.4, 0.7, -1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-1.4, 0.7, 1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-0.75, 0.7, 0.4],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+  {
+    position: [-2, 0.7, 0.4],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+  {
+    position: [2, 0.7, -1],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+  {
+    position: [1.5, 0.7, 1.9],
+    rotation: [Math.PI / 2, 0, 0],
+    color: '#27EB96',
+  },
+  {
+    position: [-0.65, 0.7, 1.6],
+    rotation: [Math.PI / 2, 0, Math.PI / 2],
+    color: '#27EB96',
+  },
+];
+
+function ApartmentScene({devices, selectedDeviceIndex}: HUApartmentScenePropsI) {
+  const { camera } = useThree()
+
+  function lookAt(position: [number, number, number]) {
+    const target = new Vector3(...position);
+    const direction = target.clone().normalize().negate().multiplyScalar(3); // Расстояние от датчика
+    const newPosition = target.clone().add(direction);
+
+    camera.lookAt(target)
+    camera.position.set(newPosition.x, 7, newPosition.z)
+  }
+
+  useEffect(() => {
+    if (selectedDeviceIndex !== null) {
+      lookAt(DEVICES_COORDINATES?.[selectedDeviceIndex]?.position);
+    }
+  }, [selectedDeviceIndex]);
+
   return (
     <>
+      {/*Датчик*/}
+      {DEVICES_COORDINATES.filter((_, index) => index < (devices?.length ?? 0)).map(({position, rotation, color}, index) => (
+        <Cylinder
+          receiveShadow
+          castShadow
+          position={position}
+          rotation={rotation}
+          args={[0.1, 0.1, 0.1]}
+        >
+          {selectedDeviceIndex !== null && selectedDeviceIndex === index && <meshStandardMaterial color={devices?.[index]?.intensity ? AppartmentStore.getIntencityColor(devices?.[index]?.intensity) : color}/>}
+          {selectedDeviceIndex === null && <meshStandardMaterial color={color}/>}
+        </Cylinder>
+      ))}
+
       {/* Плоскость пола */}
       <Plane args={[4, 4]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <meshStandardMaterial color="lightgray"/>
@@ -44,26 +135,16 @@ function ApartmentScene({devices}: HUApartmentScenePropsI) {
       <Box receiveShadow castShadow position={[-0.9, 0.5, -1]} args={[0.4, 1, 0.1]}>
         <meshStandardMaterial color="white"/>
       </Box>
-
-      {/*Датчик*/}
-      <Cylinder
-        onPointerOver={() => (document.body.style.cursor = 'pointer')}
-        onPointerOut={() => (document.body.style.cursor = 'auto')}
-        receiveShadow castShadow position={[0, 0.5, -1.9]}
-        rotation={[Math.PI / 2, 0, 0]}
-        args={[0.1, 0.1, 0.1]}
-      >
-        <meshStandardMaterial color='#27EB96'/>
-      </Cylinder>
     </>
   )
 }
 
 interface HUApartmentScenePropsI {
   devices?: SignalItemI[];
+  selectedDeviceIndex: number | null;
 }
 
-export default function HUApartmentScene({devices}: HUApartmentScenePropsI) {
+export default function HUApartmentScene(props: HUApartmentScenePropsI) {
   return (
     <Canvas
       style={{width: 600, height: 600}}
@@ -71,7 +152,7 @@ export default function HUApartmentScene({devices}: HUApartmentScenePropsI) {
         fov: 50,
         far: 100,
         near: 0.1,
-        position: [0, 7, 8]
+        position: [0, 7, 0]
       }}
       gl={{
         antialias: true,
@@ -79,7 +160,7 @@ export default function HUApartmentScene({devices}: HUApartmentScenePropsI) {
       }}
       shadows
     >
-      <ApartmentScene/>
+      <ApartmentScene {...props}/>
 
       <OrbitControls
         enableRotate
@@ -129,7 +210,7 @@ export default function HUApartmentScene({devices}: HUApartmentScenePropsI) {
         far={10}
       />
 
-      <SoftShadows size={25} samples={16} />
+      <SoftShadows size={25} samples={16}/>
       <ambientLight intensity={1}/>
       <directionalLight
         position={[5, 5, 5]}

@@ -1,14 +1,23 @@
 import {Card, Flex, Progress, Typography} from 'antd';
 import HUApartmentScene from "../../../components/HUApartmentScene/HUApartmentScene.tsx";
 import {useSearchParams} from "react-router-dom";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import ApartmentStore from "../../../store/appartmentStore.ts";
 import {observer} from "mobx-react";
 
 const ApartmentDetailsPage = observer(() => {
+  const [selectedCardIndex, setSelectedCardIndex] = useState<number | null>(null);
   const [searchParams] = useSearchParams();
   const apartmentId = searchParams.get('apartmentId');
   const eg = searchParams.get('eg');
+
+  function onCardClick(index: number) {
+    if(selectedCardIndex === index) {
+      setSelectedCardIndex(null);
+    } else {
+      setSelectedCardIndex(index);
+    }
+  }
 
   useEffect(() => {
     if(apartmentId && eg) {
@@ -21,8 +30,8 @@ const ApartmentDetailsPage = observer(() => {
       <Flex gap={12} style={{width: '100%', height: '100%'}} vertical align='flex-start'>
         <Typography.Title level={2}>Список устройств</Typography.Title>
         <Flex vertical gap={12} style={{ width: '80%', overflowY: 'auto'}}>
-          {ApartmentStore.allDevicesInfo.map(item => (
-            <Card style={{width: '100%'}}>
+          {ApartmentStore.allDevicesSignals.map((item, index) => (
+            <Card onClick={() => onCardClick(index)} style={{width: '100%', backgroundColor: selectedCardIndex === index ? '#d8ffeb' : 'white', cursor: 'pointer'}}>
               <Flex justify='space-between'>
                 <Flex vertical>
                   <Typography.Text strong>{item.signal_label}</Typography.Text>
@@ -42,7 +51,7 @@ const ApartmentDetailsPage = observer(() => {
         </Flex>
       </Flex>
       <Flex style={{height: '100%'}}>
-        <HUApartmentScene/>
+        <HUApartmentScene selectedDeviceIndex={selectedCardIndex} devices={ApartmentStore.allDevicesSignals}/>
       </Flex>
     </Flex>
   );

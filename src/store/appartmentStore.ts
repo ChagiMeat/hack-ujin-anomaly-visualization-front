@@ -24,7 +24,7 @@ class ApartmentStore {
     return Object.keys(this.allData?.data.signals ?? {}).map(Number);
   }
 
-  get allDevicesInfo(): SignalItemI[] {
+  get allDevicesSignals(): SignalItemI[] {
     const result: SignalItemI[] = [];
 
     this.allSerialNumbers.forEach(serialNumber => {

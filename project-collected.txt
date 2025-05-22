@@ -369,7 +369,7 @@ import { Navigate } from 'react-router';
 import AccountPage from './pages/account/AccountPage/AccountPage.tsx';
 import MainPage from './pages/account/MainPage/MainPage.tsx';
 import ConfigurationPage from './pages/account/ConfigurationPage/ConfigurationPage.tsx';
-import HelpPage from './pages/account/HelpPage/HelpPage.tsx';
+import ApartmentDetailsPage from './pages/account/ApartmentDetailsPage/ApartmentDetailsPage.tsx';
 import LoginPage from './pages/login/LoginPage.tsx';
 import { ConfigProvider, theme } from 'antd';
 import { observer } from 'mobx-react';
@@ -395,7 +395,7 @@ export const router = createBrowserRouter([
           },
           {
             path: 'help',
-            element: <HelpPage />,
+            element: <ApartmentDetailsPage />,
           },
         ],
       },
@@ -671,11 +671,11 @@ export default function ConfigurationPage() {
 }
 
 
-      HelpPage/
-        HelpPage.tsx
+      ApartmentDetailsPage/
+        ApartmentDetailsPage.tsx
 import { Flex, Typography } from 'antd';
 
-export default function HelpPage() {
+export default function ApartmentDetailsPage() {
   return (
     <Flex flex='1' vertical justify='center' align='center'>
       <Typography.Text type='secondary'>Страница в разработке</Typography.Text>

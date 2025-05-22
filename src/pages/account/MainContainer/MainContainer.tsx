@@ -1,25 +1,26 @@
-import { Button, Flex, Segmented, Space, Switch, Typography } from 'antd';
+import {Button, Flex, Segmented, Space, Switch, Typography} from 'antd';
 import {
   HomeOutlined,
+  LineChartOutlined,
+  LoadingOutlined,
   MoonOutlined,
-  QuestionCircleOutlined,
-  SlidersOutlined,
   SunOutlined,
   ThunderboltTwoTone,
   UserOutlined,
 } from '@ant-design/icons';
-import { Outlet, useLocation, useNavigate } from 'react-router';
-import { SegmentedLabeledOption } from 'rc-segmented';
+import {Outlet, useLocation, useNavigate} from 'react-router';
+import {SegmentedLabeledOption} from 'rc-segmented';
 import cls from './MainContainer.module.css';
-import { useEffect, useState } from 'react';
-import { observer } from 'mobx-react';
+import {useEffect, useState} from 'react';
+import {observer} from 'mobx-react';
 import ConfigStore from '../../../store/configStore.ts';
+import ApartmentStore from "../../../store/appartmentStore.ts";
 
 const segmentedConfig: SegmentedLabeledOption<string>[] = [
   {
     label: (
       <Space>
-        <HomeOutlined />
+        <HomeOutlined/>
         Главная
       </Space>
     ),
@@ -29,21 +30,11 @@ const segmentedConfig: SegmentedLabeledOption<string>[] = [
   {
     label: (
       <Space>
-        <SlidersOutlined />
-        Настройки
+        <LineChartOutlined/>
+        Детализация
       </Space>
     ),
-    value: 'configuration',
-    disabled: false,
-  },
-  {
-    label: (
-      <Space>
-        <QuestionCircleOutlined />
-        Помощь
-      </Space>
-    ),
-    value: 'help',
+    value: 'apartment-details',
     disabled: false,
   },
 ];
@@ -52,6 +43,7 @@ function MainContainer() {
   const navigate = useNavigate();
   const location = useLocation();
   const [currentSelection, setCurrentSelection] = useState<string>(segmentedConfig[0].value);
+  const [isLoadingGlobal, setIsLoadingGlobal] = useState<boolean>(false);
 
   useEffect(() => {
     setCurrentSelection(
@@ -60,12 +52,18 @@ function MainContainer() {
     );
   }, [location]);
 
+  useEffect(() => {
+    const isLoading = ApartmentStore.isLoading;
+    setIsLoadingGlobal(isLoading);
+  }, [ApartmentStore.isLoading]);
+
   return (
     <>
       <Flex justify='space-between' align='center'>
         <Space>
           <Typography.Title>Личный кабинет UJIN</Typography.Title>
-          {ConfigStore.isWorking && <ThunderboltTwoTone />}
+          {ConfigStore.isWorking && <ThunderboltTwoTone/>}
+          {isLoadingGlobal && <LoadingOutlined style={{fontSize: 32}} size={32}/>}
         </Space>
 
         <Space size='large'>
@@ -73,14 +71,14 @@ function MainContainer() {
             onChange={checked => {
               ConfigStore.changeTheme(checked ? 'dark' : 'light');
             }}
-            checkedChildren={<MoonOutlined />}
-            unCheckedChildren={<SunOutlined />}
+            checkedChildren={<MoonOutlined/>}
+            unCheckedChildren={<SunOutlined/>}
             checked={ConfigStore.theme === 'dark'}
           />
           <Button
             onClick={() => navigate('settings')}
             type='text'
-            icon={<UserOutlined style={{ fontSize: 24 }} />}
+            icon={<UserOutlined style={{fontSize: 24}}/>}
           />
         </Space>
       </Flex>
@@ -93,7 +91,7 @@ function MainContainer() {
         value={currentSelection}
       />
       <div className={cls.mainContainer}>
-        <Outlet />
+        <Outlet/>
       </div>
     </>
   );

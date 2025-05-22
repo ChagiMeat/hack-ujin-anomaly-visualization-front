@@ -26,7 +26,7 @@ interface ApartmentInfoI {
   apartment_title: string;
 }
 
-interface SignalsDataI {
+export interface SignalsDataI {
   [serialNumber: string]: SignalItemI[];
 }
 

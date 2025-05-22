@@ -1,10 +1,8 @@
 import {Box, ContactShadows, OrbitControls, Plane, SoftShadows} from "@react-three/drei";
 import {Canvas, useThree} from "@react-three/fiber";
 import {Cylinder} from "@react-three/drei/core/shapes";
-import {SignalItemI} from "../../api/getDeviceInfo.ts";
 import {Vector3} from "three";
 import {useEffect} from "react";
-import AppartmentStore from "../../store/appartmentStore.ts";
 
 interface DevicesCoordinates {
   position: [number, number, number];
@@ -65,8 +63,8 @@ const DEVICES_COORDINATES: DevicesCoordinates[] = [
   },
 ];
 
-function ApartmentScene({devices, selectedDeviceIndex}: HUApartmentScenePropsI) {
-  const { camera } = useThree()
+function ApartmentScene({devicesCount, selectedDeviceIndex}: HUApartmentScenePropsI) {
+  const {camera} = useThree()
 
   function lookAt(position: [number, number, number]) {
     const target = new Vector3(...position);
@@ -86,16 +84,17 @@ function ApartmentScene({devices, selectedDeviceIndex}: HUApartmentScenePropsI) 
   return (
     <>
       {/*Датчик*/}
-      {DEVICES_COORDINATES.filter((_, index) => index < (devices?.length ?? 0)).map(({position, rotation, color}, index) => (
+      {DEVICES_COORDINATES.filter((_, index) => index < devicesCount).map(({position, rotation, color}, index) => (
         <Cylinder
+          key={position[0] + position[1] + position[2] + index}
           receiveShadow
           castShadow
           position={position}
           rotation={rotation}
           args={[0.1, 0.1, 0.1]}
+          scale={selectedDeviceIndex === index ? [1.5, 1.5, 1.5] : [1, 1, 1]}
         >
-          {selectedDeviceIndex !== null && selectedDeviceIndex === index && <meshStandardMaterial color={devices?.[index]?.intensity ? AppartmentStore.getIntencityColor(devices?.[index]?.intensity) : color}/>}
-          {selectedDeviceIndex === null && <meshStandardMaterial color={color}/>}
+          <meshStandardMaterial color={color}/>
         </Cylinder>
       ))}
 
@@ -140,7 +139,7 @@ function ApartmentScene({devices, selectedDeviceIndex}: HUApartmentScenePropsI) 
 }
 
 interface HUApartmentScenePropsI {
-  devices?: SignalItemI[];
+  devicesCount: number;
   selectedDeviceIndex: number | null;
 }
 

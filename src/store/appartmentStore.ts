@@ -2,7 +2,7 @@ import {makeAutoObservable} from "mobx";
 import ApartmentService, {
   GetDeviceSignalsParamsI,
   GetDeviceSignalsResponseI,
-  SignalItemI
+  SignalItemI, SignalsDataI
 } from "../api/getDeviceInfo.ts";
 
 class ApartmentStore {
@@ -20,8 +20,12 @@ class ApartmentStore {
     return 'red';
   }
 
-  get allSerialNumbers(): number[] {
-    return Object.keys(this.allData?.data.signals ?? {}).map(Number);
+  get allSerialNumbers(): string[] {
+    return Object.keys(this.allData?.data.signals ?? {});
+  }
+
+  get allDevices(): SignalsDataI | undefined {
+    return this.allData?.data.signals
   }
 
   get allDevicesSignals(): SignalItemI[] {

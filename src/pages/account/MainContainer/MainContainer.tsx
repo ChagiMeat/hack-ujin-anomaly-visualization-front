@@ -35,7 +35,7 @@ const segmentedConfig: SegmentedLabeledOption<string>[] = [
       </Space>
     ),
     value: 'apartment-details',
-    disabled: false,
+    disabled: true,
   },
 ];
 

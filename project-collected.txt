@@ -1,0 +1,1301 @@
+.gitignore
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+.idea
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# local env files
+.env
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+
+generateTxtForGpt.mjs
+import fs from 'fs';
+import path from 'path';
+
+// Исключаемые директории и файлы
+const EXCLUDE_DIRS = ['node_modules', '.git', 'dist', 'build', 'coverage', '.idea'];
+const EXCLUDE_FILES = ['.env', '.DS_Store', 'package-lock.json', 'yarn.lock', 'README.md'];
+
+// Функция для проверки, нужно ли исключить файл или директорию
+function shouldExclude(filePath) {
+  const baseName = path.basename(filePath);
+  return EXCLUDE_DIRS.includes(baseName) || EXCLUDE_FILES.includes(baseName);
+}
+
+// Рекурсивная функция для обхода директорий
+function collectFiles(dir, prefix = '') {
+  let result = '';
+  const items = fs.readdirSync(dir);
+
+  for (const item of items) {
+    const fullPath = path.join(dir, item);
+
+    // Пропускаем исключаемые файлы/директории
+    if (shouldExclude(fullPath)) continue;
+
+    const stats = fs.statSync(fullPath);
+
+    if (stats.isDirectory()) {
+      // Если это директория, добавляем заголовок и рекурсивно обходим её
+      result += `${prefix}${item}/\n`;
+      result += collectFiles(fullPath, `${prefix}  `);
+    } else if (stats.isFile()) {
+      // Если это файл, читаем его содержимое
+      result += `${prefix}${item}\n`;
+      try {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        result += `${content}\n\n`;
+      } catch (err) {
+        result += `  [Ошибка чтения файла: ${err.message}]\n\n`;
+      }
+    }
+  }
+
+  return result;
+}
+
+// Главная функция
+function main() {
+  const projectRoot = process.cwd(); // Корневая директория проекта
+  const outputFilePath = path.join(projectRoot, 'project-collected.txt'); // Выходной файл
+
+  console.log('Сборка файлов проекта...');
+  const collectedData = collectFiles(projectRoot);
+
+  // Записываем результат в файл
+  fs.writeFileSync(outputFilePath, collectedData, 'utf8');
+  console.log(`Проект успешно собран в файл: ${outputFilePath}`);
+}
+
+main();
+
+index.html
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>TradeBot</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+package.json
+{
+  "name": "trade-bot-front",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix",
+    "format": "prettier --write './**/*.{js,jsx,ts,tsx,css,md,json}' --config ./.prettierrc"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.3.6",
+    "antd": "^5.16.0",
+    "axios": "^1.6.8",
+    "mobx": "^6.12.3",
+    "mobx-react": "^9.1.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router": "^6.22.3",
+    "react-router-dom": "^6.22.3",
+    "victory": "^37.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.55.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "prettier": "^3.2.5",
+    "typescript": "^5.2.2",
+    "vite": "^5.0.8"
+  }
+}
+
+
+public/
+  vite.svg
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img"
+     class="iconify iconify--logos" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257">
+    <defs>
+        <linearGradient id="IconifyId1813088fe1fbc01fb466" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%">
+            <stop offset="0%" stop-color="#41D1FF"></stop>
+            <stop offset="100%" stop-color="#BD34FE"></stop>
+        </linearGradient>
+        <linearGradient id="IconifyId1813088fe1fbc01fb467" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%">
+            <stop offset="0%" stop-color="#FFEA83"></stop>
+            <stop offset="8.333%" stop-color="#FFDD35"></stop>
+            <stop offset="100%" stop-color="#FFA800"></stop>
+        </linearGradient>
+    </defs>
+    <path fill="url(#IconifyId1813088fe1fbc01fb466)"
+          d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.574 4.796 6.877 9.62Z"></path>
+    <path fill="url(#IconifyId1813088fe1fbc01fb467)"
+          d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path>
+</svg>
+
+src/
+  api/
+    index.ts
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import { BASE_URL, TOKEN } from '../consts.ts';
+import { storage } from '../utils/localStorage.ts';
+import UserStore from '../store/userStore.ts';
+
+const $api = axios.create({
+  baseURL: BASE_URL,
+});
+
+const requestInterceptor = (config: InternalAxiosRequestConfig<AxiosResponse>) => {
+  const token = storage.get(TOKEN);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+};
+
+const responseInterceptor = async (error: AxiosError) => {
+  const config = error.config;
+  //@ts-ignore
+  if (error?.response?.status === 401 && error.config && !error.config!._isRetry) {
+    //@ts-ignore
+    config!._isRetry = true;
+    try {
+      await UserStore.renew();
+      if (config) return $api.request(config);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  throw error;
+};
+
+$api.interceptors.request.use(requestInterceptor);
+
+$api.interceptors.response.use((config) => config, responseInterceptor);
+
+export default $api;
+
+
+    loginService.ts
+import {
+  CreateUserRequestI,
+  CreateUserResponseI,
+  CreateUserSessionRequestI,
+  CreateUserSessionResponseI,
+  RenewUserTokensRequestI,
+  RenewUserTokensResponseI,
+} from '../types/user.types.ts';
+import { AxiosResponse } from 'axios';
+import $api from './index.ts';
+
+export default class LoginService {
+  private static readonly loginBaseUrl = '/user';
+
+  static async registration(data: CreateUserRequestI): Promise<AxiosResponse<CreateUserResponseI>> {
+    return $api.post<CreateUserResponseI>(this.loginBaseUrl, data);
+  }
+
+  static async login(
+    data: CreateUserSessionRequestI
+  ): Promise<AxiosResponse<CreateUserSessionResponseI>> {
+    return $api.post<CreateUserSessionResponseI>(`${this.loginBaseUrl}/session`, data);
+  }
+
+  static async logout(): Promise<AxiosResponse> {
+    return $api.delete<CreateUserSessionResponseI>(`${this.loginBaseUrl}/session`);
+  }
+
+  static async checkAuth(): Promise<AxiosResponse> {
+    return $api.get(`${this.loginBaseUrl}/session/check`);
+  }
+
+  static async renewTokens(
+    data: RenewUserTokensRequestI
+  ): Promise<AxiosResponse<RenewUserTokensResponseI>> {
+    return $api.put(`${this.loginBaseUrl}/session`, data);
+  }
+}
+
+
+  components/
+    HULoadingBar/
+      HULoadingBar.module.css
+.wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.icon {
+  font-size: 32px;
+}
+
+
+      HULoadingBar.tsx
+import cls from './HULoadingBar.module.css';
+import { LoadingOutlined } from '@ant-design/icons';
+
+export default function HULoadingBar() {
+  return (
+    <div className={cls.wrapper}>
+      <LoadingOutlined className={cls.icon} size={32} />
+    </div>
+  );
+}
+
+
+  consts.ts
+export const BASE_URL = 'http://localhost:8000/api/v1';
+export const TOKEN = 'token';
+export const REFRESH_TOKEN = 'refresh_token';
+
+export const THEME = 'theme'
+
+export enum Colors {
+  Warning = '#fa8c43',
+  DarkBg = '#151518',
+  LightBg = '#fff',
+}
+
+
+  index.css
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+:root {
+  --bg-color: white;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100dvh;
+  font-family: 'Lato', sans-serif;
+  background-color: var(--bg-color);
+}
+
+.main {
+  width: 100%;
+  height: 100dvh;
+  max-width: 600px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+input,
+input[type='color'],
+input[type='date'],
+input[type='datetime'],
+input[type='datetime-local'],
+input[type='email'],
+input[type='month'],
+input[type='number'],
+input[type='password'],
+input[type='search'],
+input[type='tel'],
+input[type='text'],
+input[type='time'],
+input[type='url'],
+input[type='week'],
+select:focus,
+textarea {
+  opacity: 1;
+}
+
+
+  main.tsx
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import AccountContainer from './pages/account/AccountContainer/AccountContainer.tsx';
+import MainContainer from './pages/account/MainContainer/MainContainer.tsx';
+import { Navigate } from 'react-router';
+import AccountPage from './pages/account/AccountPage/AccountPage.tsx';
+import MainPage from './pages/account/MainPage/MainPage.tsx';
+import ConfigurationPage from './pages/account/ConfigurationPage/ConfigurationPage.tsx';
+import HelpPage from './pages/account/HelpPage/HelpPage.tsx';
+import LoginPage from './pages/login/LoginPage.tsx';
+import { ConfigProvider, theme } from 'antd';
+import { observer } from 'mobx-react';
+import ConfigStore from './store/configStore.ts';
+import { useEffect } from 'react';
+
+export const router = createBrowserRouter([
+  {
+    element: <AccountContainer />,
+    path: 'account',
+    children: [
+      {
+        element: <MainContainer />,
+        path: '',
+        children: [
+          {
+            path: '',
+            element: <MainPage />,
+          },
+          {
+            path: 'configuration',
+            element: <ConfigurationPage />,
+          },
+          {
+            path: 'help',
+            element: <HelpPage />,
+          },
+        ],
+      },
+      {
+        element: <AccountPage />,
+        path: 'settings',
+      },
+    ],
+  },
+  {
+    element: <LoginPage />,
+    path: 'login',
+  },
+  {
+    element: <Navigate to={'/login'} />,
+    path: '*',
+  },
+]);
+
+const App = observer(() => {
+    useEffect(() => {
+      ConfigStore.loadTheme();
+    }, []);
+
+    return (
+      <main className='main'>
+        <ConfigProvider
+          theme={{ algorithm: ConfigStore.theme === 'dark' ? theme.darkAlgorithm : theme.defaultAlgorithm }}>
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </main>
+    );
+  },
+);
+
+ReactDOM.createRoot(document.getElementById('root')!).render(<App />);
+
+
+  pages/
+    ProtectedRoute/
+      ProtectedRoute.tsx
+import { PropsWithChildren, useEffect, useState } from 'react';
+
+import UserStore from '../../store/userStore.ts';
+import { Navigate } from 'react-router';
+import HULoadingBar from '../../components/HULoadingBar/HULoadingBar.tsx';
+import { observer } from 'mobx-react';
+
+const ProtectedRoute = observer(function ({ children }: PropsWithChildren) {
+  const [loading, setLoading] = useState<boolean>(true);
+  useEffect(() => {
+    UserStore.checkAuth().then(() => setLoading(false));
+  }, []);
+
+  const isAuth = UserStore.isAuth;
+
+  if (loading) {
+    return <HULoadingBar />;
+  }
+
+  if (!isAuth) {
+    return <Navigate to={'/login'} />;
+  }
+
+  return <>{children}</>;
+});
+
+export default ProtectedRoute;
+
+
+    account/
+      AccountContainer/
+        AccountContainer.module.css
+.wrapper {
+  width: 100%;
+  height: 100dvh;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+
+        AccountContainer.tsx
+import cls from './AccountContainer.module.css';
+import { Outlet } from 'react-router';
+
+export default function AccountContainer() {
+  return (
+    <div className={cls.wrapper}>
+      <Outlet />
+    </div>
+  );
+}
+
+
+      AccountPage/
+        AccountPage.tsx
+import { Button, Flex, Input, Modal, Space, Typography } from 'antd';
+import { useNavigate } from 'react-router';
+import { useState } from 'react';
+
+export default function AccountPage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [disabled] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  function handleSave() {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate('/account');
+    }, 700);
+  }
+
+  return (
+    <>
+      <Flex vertical flex='1' justify='space-between' align='stretch'>
+        <div>
+          <Typography.Title>Аккаунт</Typography.Title>
+          <Space direction='vertical' style={{ padding: '50px 0 10px 0', width: '70%' }}>
+            <Input
+              disabled={disabled}
+              variant='borderless'
+              placeholder='Email'
+              value='email@gmail.com'
+            />
+            <Input.Password
+              disabled={disabled}
+              variant='borderless'
+              placeholder='Пароль'
+              value='123123123123'
+              visibilityToggle={{ visible: passwordVisible, onVisibleChange: setPasswordVisible }}
+            />
+          </Space>
+        </div>
+
+        <Space direction='vertical'>
+          <Button block type='primary' loading={loading} onClick={handleSave}>
+            Сохранить
+          </Button>
+          <Button
+            block
+            type='dashed'
+            danger
+            onClick={() => {
+              setIsModalOpen(true);
+              // navigate('/login');
+            }}
+          >
+            Выход
+          </Button>
+          <Button block type='text' onClick={() => navigate('/account')}>
+            На главную
+          </Button>
+        </Space>
+      </Flex>
+
+      <Modal
+        centered
+        title='Подтвердите выход'
+        open={isModalOpen}
+        onOk={() => navigate('/login')}
+        onCancel={() => setIsModalOpen(false)}
+        okText='Да'
+        cancelText='Отмена'
+      >
+        <p>Вы действительно хотите выйти?</p>
+      </Modal>
+    </>
+  );
+}
+
+
+      ConfigurationPage/
+        ConfigurationPage.tsx
+import { Button, Flex, Input, InputNumber, Select, Space, Typography } from 'antd';
+import { useNavigate } from 'react-router';
+import { ExclamationCircleOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { Colors } from '../../../consts.ts';
+import { Link } from 'react-router-dom';
+import { useState } from 'react';
+
+export default function ConfigurationPage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
+
+  function handleSave() {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 700);
+  }
+
+  return (
+    <Flex vertical justify="space-between" align="stretch" flex="1">
+      <Space direction="vertical" size="large">
+        <Space style={{ width: '100%' }} direction="vertical">
+          <Typography.Text>Авторизационный токен "42[...</Typography.Text>
+          <Input.TextArea autoSize variant="filled" placeholder='Авторизационный токен "42[...' />
+        </Space>
+
+        <Space direction="vertical">
+          <Space>
+            <InputNumber<number> variant="filled" controls min={0} defaultValue={3} />
+            <Typography.Text>
+              Минимальный импульс&nbsp;
+              <Link to="/account/help">
+                <QuestionCircleOutlined />
+              </Link>
+            </Typography.Text>
+          </Space>
+
+          <Space>
+            <InputNumber<number> variant="filled" controls min={0} defaultValue={4} />
+            <Typography.Text>
+              Минимальный разрыв&nbsp;
+              <Link to="/account/help">
+                <QuestionCircleOutlined />
+              </Link>
+            </Typography.Text>
+          </Space>
+
+          <Space>
+            <InputNumber<number> variant="filled" controls min={0} defaultValue={5} />
+            <Typography.Text>
+              Интервал, сек.&nbsp;
+              <Link to="/account/help">
+                <QuestionCircleOutlined />
+              </Link>
+            </Typography.Text>
+          </Space>
+        </Space>
+
+        <Space>
+          <Space.Compact>
+            <Select
+              defaultValue="EURRUB"
+              options={[
+                { value: 'EURRUB', label: 'EURRUB' },
+                { value: 'USDRUB', label: 'USDRUB' },
+                { value: 'BTSUSDT', label: 'BTSUSDT' },
+              ]}
+            />
+            <Input variant="filled" placeholder="Текущая пара" />
+          </Space.Compact>
+          <Typography.Text>
+            Пара&nbsp;
+            <Link to="/account/help">
+              <QuestionCircleOutlined />
+            </Link>
+          </Typography.Text>
+        </Space>
+
+        <Typography.Text type="secondary">
+          <ExclamationCircleOutlined style={{ color: Colors.Warning }} />
+          &nbsp; Пояснения к параметрам конфигурации находятся на вкладке&nbsp;
+          <Link to={'/account/help'}>помощь</Link>
+        </Typography.Text>
+      </Space>
+
+      <Space direction="vertical">
+        <Button block type="primary" loading={loading} onClick={handleSave}>
+          Сохранить
+        </Button>
+        <Button block type="text" onClick={() => navigate('/account')}>
+          Отмена
+        </Button>
+      </Space>
+    </Flex>
+  );
+}
+
+
+      HelpPage/
+        HelpPage.tsx
+import { Flex, Typography } from 'antd';
+
+export default function HelpPage() {
+  return (
+    <Flex flex='1' vertical justify='center' align='center'>
+      <Typography.Text type='secondary'>Страница в разработке</Typography.Text>
+    </Flex>
+  );
+}
+
+
+      MainContainer/
+        MainContainer.module.css
+.mainContainer {
+  flex: 1;
+  display: flex;
+  padding: 50px 0 10px 0;
+}
+
+
+        MainContainer.tsx
+import { Button, Flex, Segmented, Space, Switch, Typography } from 'antd';
+import {
+  HomeOutlined,
+  MoonOutlined,
+  QuestionCircleOutlined,
+  SlidersOutlined,
+  SunOutlined,
+  ThunderboltTwoTone,
+  UserOutlined,
+} from '@ant-design/icons';
+import { Outlet, useLocation, useNavigate } from 'react-router';
+import { SegmentedLabeledOption } from 'rc-segmented';
+import cls from './MainContainer.module.css';
+import { useEffect, useState } from 'react';
+import { observer } from 'mobx-react';
+import ConfigStore from '../../../store/configStore.ts';
+
+const segmentedConfig: SegmentedLabeledOption<string>[] = [
+  {
+    label: (
+      <Space>
+        <HomeOutlined />
+        Главная
+      </Space>
+    ),
+    value: '',
+    disabled: false,
+  },
+  {
+    label: (
+      <Space>
+        <SlidersOutlined />
+        Настройки
+      </Space>
+    ),
+    value: 'configuration',
+    disabled: false,
+  },
+  {
+    label: (
+      <Space>
+        <QuestionCircleOutlined />
+        Помощь
+      </Space>
+    ),
+    value: 'help',
+    disabled: false,
+  },
+];
+
+function MainContainer() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [currentSelection, setCurrentSelection] = useState<string>(segmentedConfig[0].value);
+
+  useEffect(() => {
+    setCurrentSelection(
+      segmentedConfig.toReversed().find((segment) => location.pathname.includes(segment.value))
+        ?.value ?? segmentedConfig[0].value,
+    );
+  }, [location]);
+
+  return (
+    <>
+      <Flex justify='space-between' align='center'>
+        <Space>
+          <Typography.Title>Alpha</Typography.Title>
+          {ConfigStore.isWorking && <ThunderboltTwoTone />}
+        </Space>
+
+        <Space size='large'>
+          <Switch
+            onChange={checked => {
+              ConfigStore.changeTheme(checked ? 'dark' : 'light');
+            }}
+            checkedChildren={<MoonOutlined />}
+            unCheckedChildren={<SunOutlined />}
+            checked={ConfigStore.theme === 'dark'}
+          />
+          <Button
+            onClick={() => navigate('settings')}
+            type='text'
+            icon={<UserOutlined style={{ fontSize: 24 }} />}
+          />
+        </Space>
+      </Flex>
+
+      <Segmented<string>
+        block
+        options={segmentedConfig}
+        onChange={(value) => navigate(value)}
+        defaultValue={currentSelection}
+        value={currentSelection}
+      />
+      <div className={cls.mainContainer}>
+        <Outlet />
+      </div>
+    </>
+  );
+}
+
+export default observer(MainContainer);
+
+      MainPage/
+        MainPage.tsx
+import { Button, Flex, Space, Typography } from 'antd';
+import { useState } from 'react';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { Colors } from '../../../consts.ts';
+import { Link } from 'react-router-dom';
+import { observer } from 'mobx-react';
+import ConfigStore from '../../../store/configStore.ts';
+
+function MainPage() {
+  const [active, setActive] = useState<boolean>(ConfigStore.isWorking);
+  const [loading, setLoading] = useState<boolean>(false);
+
+  function handleStartButton() {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setActive((prevState) => {
+        ConfigStore.isWorking = !prevState;
+        return !prevState;
+      });
+    }, 700);
+  }
+
+  return (
+    <Flex vertical justify='center' align='center' flex='1'>
+      <Space direction='vertical' align='center' size='middle'>
+        <Button
+          loading={loading}
+          onClick={handleStartButton}
+          type='primary'
+          size='large'
+          danger={active}
+        >
+          {!active ? 'Запуск' : 'Отмена'}
+        </Button>
+        <Typography.Text type='secondary'>
+          <ExclamationCircleOutlined style={{ color: Colors.Warning }} />
+          &nbsp; Перед запуском бота проверьте&nbsp;
+          <Link to={'/account/configuration'}>настройки</Link>
+        </Typography.Text>
+      </Space>
+    </Flex>
+  );
+}
+
+export default observer(MainPage);
+
+
+    login/
+      LoginPage.tsx
+import { Button, Flex, Input, Space, Typography } from 'antd';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [passwordVisible, setPasswordVisible] = useState(false);
+
+  function handleEnter() {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      navigate('/account');
+    }, 700);
+  }
+
+  return (
+    <Flex vertical align="center" justify="center" flex="1">
+      <Space direction="vertical" size="large">
+        <Typography.Title style={{ textAlign: 'center' }}>Ujin<br/> Личный кабинет</Typography.Title>
+
+        <Space direction="vertical" style={{width: '100%'}}>
+          <Input variant="filled" placeholder="Email" />
+          <Input.Password
+            variant="filled"
+            placeholder="Пароль"
+            visibilityToggle={{ visible: passwordVisible, onVisibleChange: setPasswordVisible }}
+          />
+        </Space>
+
+        <Button block type="primary" loading={loading} onClick={handleEnter}>
+          Вход
+        </Button>
+      </Space>
+    </Flex>
+  );
+}
+
+
+  store/
+    configStore.ts
+import { makeAutoObservable } from 'mobx';
+import { Colors, THEME } from '../consts.ts';
+
+class ConfigStore {
+  isWorking = false;
+  private _theme: 'dark' | 'light' = 'dark';
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  get theme() {
+    return this._theme;
+  }
+
+  changeTheme(theme: typeof this._theme){
+        const doc = document.documentElement;
+        doc.style.setProperty('--bg-color', theme === 'dark' ? Colors.DarkBg : Colors.LightBg);
+        this._theme = theme;
+        localStorage.setItem(THEME, theme);
+  }
+
+  loadTheme() {
+    const savedTheme = localStorage.getItem(THEME);
+    this._theme =  savedTheme === 'dark' || savedTheme === 'light' ? savedTheme : 'dark';
+    const doc = document.documentElement;
+    doc.style.setProperty('--bg-color', this._theme === 'dark' ? Colors.DarkBg : Colors.LightBg);
+  }
+}
+
+export default new ConfigStore();
+
+
+    notificationStore.ts
+import { makeAutoObservable } from 'mobx';
+import { ErrorI } from '../utils/errorHandler.ts';
+
+export interface MessageI {
+  id: number;
+  timeoutId: number;
+  message: string;
+  type?: 'error' | 'warning' | 'notification';
+  onClose: () => void;
+}
+
+export interface NotificationServiceI {
+  showError: (message: string) => void;
+  showWarning: (message: string) => void;
+  showNotification: (message: string) => void;
+  show: (message: string, type: ErrorI['type']) => void;
+}
+
+class NotificationStore implements NotificationServiceI {
+  private _messagesQueue: MessageI[] = [];
+  private readonly _timeout = 3000;
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  get messages(): MessageI[] {
+    return this._messagesQueue;
+  }
+
+  showError(message: string): void {
+    this.showMessage(message, 'error');
+  }
+
+  showWarning(message: string): void {
+    this.showMessage(message, 'warning');
+  }
+
+  showNotification(message: string): void {
+    this.showMessage(message, 'notification');
+  }
+
+  show(message: string, type: MessageI['type']): void {
+    this.showMessage(message, type);
+  }
+
+  private showMessage(message: string, type: MessageI['type']): void {
+    const id = Date.now();
+    const removeMessageHandler = () => this.removeMessageFromQueue(id);
+    const timeoutId = setTimeout(removeMessageHandler, this._timeout);
+    this.pushMessageQueue({ message, type, id, onClose: removeMessageHandler, timeoutId });
+  }
+
+  private pushMessageQueue(message: MessageI): void {
+    this._messagesQueue.push(message);
+  }
+
+  private removeMessageFromQueue(id: MessageI['id']): void {
+    const indexOfMessage = this._messagesQueue.map((message) => message.id).indexOf(id);
+    const message = this._messagesQueue.splice(indexOfMessage, 1)[0];
+    clearTimeout(message.timeoutId);
+  }
+}
+
+export default new NotificationStore();
+
+
+    userStore.ts
+import { makeAutoObservable } from 'mobx';
+import LoginService from '../api/loginService.ts';
+import { storage } from '../utils/localStorage.ts';
+import { REFRESH_TOKEN, TOKEN } from '../consts.ts';
+import { router } from '../main.tsx';
+import ErrorHandler, { ErrorI } from '../utils/errorHandler.ts';
+import { CreateUserRequestI, CreateUserSessionRequestI, UserI } from '../types/user.types.ts';
+
+class UserStore {
+  isAuth = false;
+  user?: UserI;
+  private readonly _errorHandler = new ErrorHandler();
+
+  constructor() {
+    makeAutoObservable(this);
+  }
+
+  setAuth(isAuth: boolean) {
+    this.isAuth = isAuth;
+  }
+
+  setUser(user: UserI) {
+    this.user = user;
+  }
+
+  async login(data: CreateUserSessionRequestI) {
+    try {
+      const response = await LoginService.login(data);
+      storage.set(TOKEN, response.data.access_token);
+      storage.set(REFRESH_TOKEN, response.data.refresh_token);
+      this.setAuth(true);
+      this.setUser({ uuid: response.data.uuid });
+      await router.navigate('/account');
+      return response;
+    } catch (e: unknown) {
+      const errorsConfig: ErrorI[] = [{ errorText: 'Неверный логин или пароль', code: 401 }];
+      this._errorHandler.handleError(e, errorsConfig);
+    }
+  }
+
+  async registration(data: CreateUserRequestI) {
+    try {
+      const response = await LoginService.registration(data);
+      this.setUser({ uuid: response.data.uuid });
+      await router.navigate('/login');
+      return response;
+    } catch (e) {
+      const errorsConfig: ErrorI[] = [{ errorText: 'Пользователь уже существует', code: 400 }];
+      this._errorHandler.handleError(e, errorsConfig);
+    }
+  }
+
+  async logout() {
+    try {
+      await LoginService.logout();
+      //TODO а будет ли ошибка, если я не брошу запрос при логауте?
+      storage.remove(TOKEN);
+      storage.remove(REFRESH_TOKEN);
+      this.setAuth(false);
+      await router.navigate('/login');
+    } catch (e) {
+      this._errorHandler.handleError(e);
+    }
+  }
+
+  async renew() {
+    try {
+      const refreshToken = storage.get(REFRESH_TOKEN);
+      //TODO удалить throw после того как разберусь с говнокодом в storage.get
+      if (!refreshToken) throw new Error('refreshToken');
+      const response = await LoginService.renewTokens({ refresh_token: refreshToken });
+      this.setAuth(true);
+      this.setUser({ uuid: response.data.uuid });
+      storage.set(TOKEN, response.data.access_token);
+      storage.set(REFRESH_TOKEN, response.data.refresh_token);
+    } catch (e) {
+      this.setAuth(false);
+      const errorsConfig: ErrorI[] = [
+        { errorText: 'Ошибка авторизации', code: 401 },
+        { errorText: 'Ошибка авторизации', code: 404 },
+      ];
+      this._errorHandler.handleError(e, errorsConfig);
+    }
+  }
+
+  async checkAuth() {
+    try {
+      await LoginService.checkAuth();
+      this.setAuth(true);
+    } catch (e) {
+      this.setAuth(false);
+      const errorsConfig: ErrorI[] = [{ errorText: 'Ошибка авторизации' }];
+      this._errorHandler.handleError(e, errorsConfig);
+    }
+  }
+}
+
+export default new UserStore();
+
+
+  types/
+    user.types.ts
+export interface UserI {
+  uuid: string;
+}
+
+export interface CreateUserRequestI {
+  login: string;
+  password: string;
+}
+
+export interface CreateUserResponseI {
+  uuid: string;
+}
+
+export interface CreateUserSessionRequestI extends CreateUserRequestI {}
+
+export interface CreateUserSessionResponseI extends CreateUserResponseI {
+  access_token: string;
+  refresh_token: string;
+}
+
+export interface RenewUserTokensRequestI {
+  refresh_token: string;
+}
+
+export interface RenewUserTokensResponseI extends CreateUserSessionResponseI {}
+
+
+  types.d.ts
+interface Mapping {
+  [key: string]: string;
+}
+
+declare module '*.module.css' {
+  const mapping: Mapping;
+  export default mapping;
+}
+declare module '*.module.scss' {
+  const mapping: Mapping;
+  export default mapping;
+}
+declare module '*.module.sass' {
+  const mapping: Mapping;
+  export default mapping;
+}
+declare module '*.module.styl' {
+  const mapping: Mapping;
+  export default mapping;
+}
+
+declare module '*.svg?inline' {
+  const content: any;
+  export default content;
+}
+
+declare module '*.svg' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.png' {
+  const content: string;
+  export default content;
+}
+
+
+  utils/
+    errorHandler.ts
+import NotificationStore, { NotificationServiceI } from '../store/notificationStore.ts';
+import { isAxiosError } from 'axios';
+
+export interface ErrorI {
+  code?: number;
+  errorText: string;
+  type?: 'error' | 'warning' | 'notification';
+  callback?: () => void;
+}
+
+export default class ErrorHandler {
+  defaultErrors: ErrorI[] = [];
+  private readonly _unexpectedErrorText = 'Неизвестная ошибка';
+  private readonly _notificationService: NotificationServiceI = NotificationStore;
+
+  handleError(error: unknown, errorsConfig?: ErrorI[]): void {
+    let handled = false;
+
+    if (isAxiosError(error)) {
+      [
+        ...(errorsConfig ?? []),
+        ...this.defaultErrors.filter(
+          (defaultError) => !errorsConfig?.some((err) => defaultError.code === err.code)
+        ),
+      ].forEach((errorConfig) => {
+        if (errorConfig.code === error?.response?.status) {
+          this._notificationService.show(errorConfig.errorText, errorConfig.type);
+          errorConfig.callback?.();
+          console.error(errorConfig.errorText);
+          handled = true;
+        }
+      });
+    }
+
+    if (!handled) {
+      this._notificationService.show(this._unexpectedErrorText, 'error');
+      console.error(error);
+    }
+  }
+}
+
+
+    localStorage.ts
+export const storage = {
+  //TODO зарефачить это говно или скачать библиотеку
+  get: (key: string, defaultValue?: string): string | null => {
+    try {
+      const result = localStorage.getItem(key);
+      if (!result) return defaultValue ?? null;
+      try {
+        return JSON.parse(result) as string;
+      } catch {
+        return result;
+      }
+    } catch {
+      return defaultValue ?? null;
+    }
+  },
+  set: (key: string, value: string): void => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (error) {
+      // toDo обработать ошибку
+    }
+  },
+  remove(key: string): void {
+    try {
+      localStorage.removeItem(key);
+    } catch (e) {
+      console.error(e)
+    }
+  },
+};
+
+
+tsconfig.json
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "useDefineForClassFields": true,
+    "lib": ["esnext", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+
+
+tsconfig.node.json
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+vercel.json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}
+
+
+vite.config.ts
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [react()],
+});
+
+

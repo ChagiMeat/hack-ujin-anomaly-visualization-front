@@ -190,8 +190,8 @@ export default function HUApartmentScene(props: HUApartmentScenePropsI) {
         shadow-camera-right={20}
         shadow-camera-top={20}
         shadow-camera-bottom={-20}
-        shadow-bias={-0.0001} // Уменьшает артефакты
-        shadow-normalBias={0.05} // Улучшает качество теней
+        shadow-bias={-0.0001}
+        shadow-normalBias={0.05}
       />
 
       {/* Дополнительный мягкий свет сбоку */}

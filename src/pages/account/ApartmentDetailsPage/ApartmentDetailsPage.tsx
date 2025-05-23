@@ -50,7 +50,7 @@ const ApartmentDetailsPage = observer(() => {
               (
                 <Flex key={serialNumber} align='flex-start' flex={1} style={{width: '100%'}} gap={12}>
                   <Collapse activeKey={selectedCardIndex ?? undefined}
-                            style={{width: '100%', backgroundColor: selectedCardIndex === index ? '#d8ffeb' : undefined}}>
+                            style={{width: '100%'}}>
                     <Collapse.Panel
                       collapsible='disabled'
                       showArrow={false}

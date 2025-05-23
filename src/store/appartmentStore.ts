@@ -2,12 +2,15 @@ import {makeAutoObservable} from "mobx";
 import ApartmentService, {
   GetDeviceSignalsParamsI,
   GetDeviceSignalsResponseI,
-  SignalItemI, SignalsDataI
+  SignalItemI,
+  SignalsDataI
 } from "../api/getDeviceInfo.ts";
+import {ApartmentI} from "../pages/account/MainPage/MainPage.tsx";
 
 class ApartmentStore {
-  private allData: GetDeviceSignalsResponseI | null = null;
+  statusesMap: Map<number, number> = new Map();
   isLoading = false;
+  private allData: GetDeviceSignalsResponseI | null = null;
 
   constructor() {
     makeAutoObservable(this);
@@ -18,6 +21,32 @@ class ApartmentStore {
     if (intencity < 5) return 'yellow';
     if (intencity < 10) return 'orange';
     return 'red';
+  }
+
+   async fetchStatusesMap(apartments: ApartmentI[]): Promise<void> {
+    this.isLoading = true;
+    try {
+      const requests = apartments.map(apartment => ApartmentService.getApartmentDevices({apartmentId: apartment.apartmentId, eg: apartment.eg}));
+      const apartmentsSignals = await Promise.all(requests);
+
+      const statusesMap = new Map<number, number>();
+      apartmentsSignals.forEach(apart => {
+        let biggestSignal = 0;
+        for(const signalKey in apart.data.data.signals) {
+          const signals = apart.data.data.signals[signalKey];
+          signals.forEach(signal => {
+            if(signal.intensity > biggestSignal) biggestSignal = signal.intensity;
+          })
+        }
+        statusesMap.set(Number(apart.data.data.apartment.apartment_id), biggestSignal);
+      });
+
+      this.isLoading = false;
+      this.statusesMap = statusesMap;
+    } catch (e) {
+      this.isLoading = false;
+      throw new Error('Error while fetching statuses map');
+    }
   }
 
   get allSerialNumbers(): string[] {
@@ -33,12 +62,12 @@ class ApartmentStore {
 
     this.allSerialNumbers.forEach(serialNumber => {
       const devices = this.allData?.data.signals[serialNumber]
-      if(devices) result.push(...devices);
+      if (devices) result.push(...devices);
     })
     return result;
   }
 
-  async fetchApartmentDevices(params: GetDeviceSignalsParamsI): Promise<void>{
+  async fetchApartmentDevices(params: GetDeviceSignalsParamsI): Promise<void> {
     this.isLoading = true;
     try {
       const response = await ApartmentService.getApartmentDevices(params);

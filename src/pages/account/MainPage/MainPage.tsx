@@ -1,14 +1,17 @@
-import {Card, Flex, Typography} from 'antd';
+import {Card, Flex, Progress, Typography} from 'antd';
 import {observer} from 'mobx-react';
 import {PieChartOutlined} from "@ant-design/icons";
 import {useNavigate} from "react-router";
+import {useEffect} from "react";
+import AppartmentStore from "../../../store/appartmentStore.ts";
+import ApartmentStore from "../../../store/appartmentStore.ts";
 
-interface Apatment {
+export interface ApartmentI {
   apartmentId: number;
   eg: string;
 }
 
-const APARTMENTS_LIST: Apatment[] = [
+const APARTMENTS_LIST: ApartmentI[] = [
   {
     apartmentId: 2118,
     eg: '490ae3a8-1a8f-426f-b21b-04fe8e8483de',
@@ -31,26 +34,52 @@ const APARTMENTS_LIST: Apatment[] = [
   }
 ];
 
-function MainPage() {
+const MainPage = observer(() => {
   const navigate = useNavigate();
+
+  useEffect(() => {
+    void AppartmentStore.fetchStatusesMap(APARTMENTS_LIST);
+  }, []);
 
   return (
     <Flex vertical gap={12} justify='center' align='start' flex='1'>
       <Typography.Title level={2}>Список апартаментов</Typography.Title>
-      {APARTMENTS_LIST.map(apartment => (
-        <Card style={{width: '100%'}} key={apartment.eg}>
-          <Flex justify='space-between'>
-            <Flex vertical>
-              <Typography.Text strong>Квартира №{apartment.apartmentId}</Typography.Text>
-              <Typography.Text type='secondary'>{apartment.eg}</Typography.Text>
-            </Flex>
+      {APARTMENTS_LIST.map(apartment => {
+        const status = AppartmentStore.statusesMap.get(apartment.apartmentId)
+        const intensity = status ?? 0
+        return (
 
-            <PieChartOutlined style={{cursor: 'pointer', fontSize: 24}} onClick={() => navigate(`/account/apartment-details?apartmentId=${apartment.apartmentId}&eg=${apartment.eg}`)}/>
-          </Flex>
-        </Card>
-      ))}
+          <Card style={{width: '100%'}} key={apartment.eg}>
+            <Flex justify='space-between'>
+              <Flex vertical>
+                <Typography.Text strong>Квартира №{apartment.apartmentId}</Typography.Text>
+                <Typography.Text type='secondary'>{apartment.eg}</Typography.Text>
+              </Flex>
+
+              <Flex gap={50}>
+                {status &&
+                    <Flex justify='center' align='center' gap={12}>
+                        <Progress
+                            strokeWidth={10}
+                            size={40}
+                            strokeColor={ApartmentStore.getIntencityColor(intensity)}
+                            type="circle"
+                            percent={(intensity / 10) * 100}
+                            format={(percent) => `${Number(percent).toFixed(1)}`}
+                        />
+                        <Typography.Text type='secondary'>Максимальное<br/> показание</Typography.Text>
+                    </Flex>
+                }
+
+                <PieChartOutlined style={{cursor: 'pointer', fontSize: 24}}
+                                  onClick={() => navigate(`/account/apartment-details?apartmentId=${apartment.apartmentId}&eg=${apartment.eg}`)}/>
+              </Flex>
+            </Flex>
+          </Card>
+        )
+      })}
     </Flex>
   );
-}
+})
 
-export default observer(MainPage);
+export default MainPage;

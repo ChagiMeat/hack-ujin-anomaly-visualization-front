@@ -71,8 +71,8 @@ const ApartmentDetailsPage = observer(() => {
                                 <Typography.Text type='secondary'>{item.name}</Typography.Text>
                               </Flex>
                               <Progress
-                                strokeWidth={12}
-                                size={60}
+                                strokeWidth={10}
+                                size={70}
                                 strokeColor={ApartmentStore.getIntencityColor(item.intensity)}
                                 type="circle"
                                 percent={(Number(item.intensity) / 10) * 100}

@@ -5,7 +5,6 @@ import {
   LoadingOutlined,
   MoonOutlined,
   SunOutlined,
-  ThunderboltTwoTone,
   UserOutlined,
 } from '@ant-design/icons';
 import {Outlet, useLocation, useNavigate} from 'react-router';
@@ -62,7 +61,6 @@ function MainContainer() {
       <Flex justify='space-between' align='center'>
         <Space>
           <Typography.Title>Личный кабинет UJIN</Typography.Title>
-          {ConfigStore.isWorking && <ThunderboltTwoTone/>}
           {isLoadingGlobal && <LoadingOutlined style={{fontSize: 32}} size={32}/>}
         </Space>
 

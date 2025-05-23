@@ -2,7 +2,6 @@ import { makeAutoObservable } from 'mobx';
 import { Colors, THEME } from '../consts.ts';
 
 class ConfigStore {
-  isWorking = false;
   private _theme: 'dark' | 'light' = 'dark';
 
   constructor() {
